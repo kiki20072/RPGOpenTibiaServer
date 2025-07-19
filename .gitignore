@@ -370,7 +370,7 @@ tasks.json
 config.lua
 client_assertions.txt
 .env
-data-global/world/world.otbm
+custom/world/world.otbm
 
 # Extensions
 *.ini

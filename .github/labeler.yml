@@ -9,13 +9,13 @@
   - any: ['data-crystal/**/*', '!data-crystal/world/*']
 
 "Area: Datapack Global":
-  - any: ['data-global/**/*', '!data-global/world/*']
+  - any: ['custom/**/*', '!custom/world/*']
 
 "Area: Map Crystal":
   - any: ['data-crystal/world/*']
 
 "Area: Map Global":
-  - any: ['data-global/world/*']
+  - any: ['custom/world/*']
 
 "Area: Docker":
   - any: ['docker/**/*']
