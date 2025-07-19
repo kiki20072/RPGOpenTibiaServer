@@ -706,7 +706,7 @@ public:
 	int32_t getWeaponSkill(const std::shared_ptr<Item> &item) const;
 	void getShieldAndWeapon(std::shared_ptr<Item> &shield, std::shared_ptr<Item> &weapon) const;
 	uint16_t calculateFlatDamageHealing() const;
-	uint16_t attackTotal(uint16_t flatBonus, uint16_t equipment, uint16_t skill) const;
+	uint16_t attackTotal(uint16_t flatBonus, uint16_t equipment, uint16_t skill, WeaponType_t weaponType) const;
 	uint16_t attackRawTotal(uint16_t flatBonus, uint16_t equipment, uint16_t skill) const;
 	uint16_t getDistanceAttackSkill(const int32_t attackSkill, const int32_t weaponAttack) const;
 	uint16_t getAttackSkill(const std::shared_ptr<Item> &item) const;

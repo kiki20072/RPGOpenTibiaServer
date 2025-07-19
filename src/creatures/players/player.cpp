@@ -530,26 +530,37 @@ uint16_t Player::calculateFlatDamageHealing() const {
 	return constA + (level - constB) * constC;
 }
 
-uint16_t Player::attackTotal(uint16_t flatBonus, uint16_t equipment, uint16_t skill) const {
+uint16_t Player::attackTotal(uint16_t flatBonus, uint16_t equipment, uint16_t skill, WeaponType_t weaponType) const {
 	double fightFactor = 0;
+	float attackFactor = 0.0f;
+	if (weaponType != WEAPON_DISTANCE && weaponType != WEAPON_AMMO && weaponType != WEAPON_MISSILE) {
+		auto pointPhysical = Player::kv()->get("physical-damage-point-system").value().getNumber();
+		auto addPhysicalPoints = pointPhysical / 2000;
+		attackFactor += addPhysicalPoints;
+	}
+	if (weaponType == WEAPON_DISTANCE || weaponType == WEAPON_AMMO || weaponType == WEAPON_MISSILE) {
+		auto pointPhysical = Player::kv()->get("physical-damage-point-system").value().getNumber();
+		auto addPhysicalPoints = pointPhysical / 3000;
+		attackFactor += addPhysicalPoints;
+	}
 	switch (fightMode) {
 		case FIGHTMODE_ATTACK: {
-			fightFactor = 1.2f * equipment;
+			fightFactor = (1.2f + attackFactor) * equipment;
 			break;
 		}
 
 		case FIGHTMODE_BALANCED: {
-			fightFactor = 1.0f * equipment;
+			fightFactor = (1.0f + attackFactor) * equipment;
 			break;
 		}
 
 		case FIGHTMODE_DEFENSE: {
-			fightFactor = 0.6f * equipment;
+			fightFactor = (0.6f + attackFactor) * equipment;
 			break;
 		}
 
 		default: {
-			fightFactor = 1.0f * equipment;
+			fightFactor = (1.0f + attackFactor) * equipment;
 			break;
 		}
 	}
@@ -3764,8 +3775,34 @@ void Player::death(const std::shared_ptr<Creature> &lastHitCreature) {
 
 	loginPosition = town->getTemplePosition();
 
+	if (kv()->scoped("bless")->get("full-protection-when-died") == true) {
+		int32_t blessingCount = 0;
+		bool pvpDeath = false;
+		bool protection = false;
+		const uint8_t maxBlessing = (operatingSystem == CLIENTOS_NEW_WINDOWS || operatingSystem == CLIENTOS_NEW_MAC) ? 8 : 6;
+		pvpDeath = (Player::lastHitIsPlayer(lastHitCreature) || playerDmg / (playerDmg + static_cast<double>(othersDmg)) >= 0.05);
+
+		if (pvpDeath) {
+				removeBlessing(1, 1); // Remove TOF only
+				protection = true;
+			} else {
+				for (int i = 2; i <= maxBlessing; i++) {
+					if (hasBlessing(i)) {
+						blessingCount++;
+					}
+				}
+				
+				if (blessingCount == 7) {
+					for (int i = 2; i <= maxBlessing; i++) {
+						removeBlessing(i, 1);
+					}
+					protection = true;
+				}
+			}
+		}
+
 	g_game().sendSingleSoundEffect(static_self_cast<Player>()->getPosition(), sex == PLAYERSEX_FEMALE ? SoundEffect_t::HUMAN_FEMALE_DEATH : SoundEffect_t::HUMAN_MALE_DEATH, getPlayer());
-	if (skillLoss) {
+	if (skillLoss and !protection) {
 		int playerDmg = 0;
 		int othersDmg = 0;
 		uint32_t opponents = 0;

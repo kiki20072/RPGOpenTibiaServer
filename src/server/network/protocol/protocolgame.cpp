@@ -4288,11 +4288,15 @@ void ProtocolGame::sendCyclopediaCharacterOffenceStats() {
 	msg.add<uint16_t>(flatBonus);
 	msg.add<uint16_t>(0x00);
 
+	
 	const auto &weapon = player->getWeapon();
 	if (weapon) {
 		const ItemType &it = Item::items[weapon->getID()];
 		if (it.weaponType == WEAPON_WAND) {
-			msg.add<uint16_t>(it.maxHitChance);
+			auto spellPoint = player->kv()->get("spell-damage-point-system").value().getNumber();
+			int32_t extraDamage = std::min<int32_t>(500, std::round(spellPoint / 2));
+			auto addSpellDamagePoints = spellPoint / 75;
+			msg.add<uint16_t>(addSpellDamagePoints + it.maxHitChance);
 			msg.add<uint16_t>(0);
 			msg.add<uint16_t>(0);
 			msg.addByte(0x00);
@@ -4319,7 +4323,7 @@ void ProtocolGame::sendCyclopediaCharacterOffenceStats() {
 			int32_t distanceValue = player->getSkillLevel(SKILL_DISTANCE);
 			int32_t attackSkill = player->getDistanceAttackSkill(distanceValue, attackValue);
 			const auto attackRawTotal = player->attackRawTotal(flatBonus, attackValue, distanceValue);
-			const auto attackTotal = player->attackTotal(flatBonus, attackValue, distanceValue);
+			const auto attackTotal = player->attackTotal(flatBonus, attackValue, distanceValue, it.weaponType);
 
 			msg.add<uint16_t>(attackTotal);
 			msg.add<uint16_t>(flatBonus);
@@ -8239,6 +8243,10 @@ void ProtocolGame::AddPlayerSkills(NetworkMessage &msg) {
 
 	const auto flatBonus = player->calculateFlatDamageHealing();
 	msg.add<uint16_t>(flatBonus); // Flat Damage and Healing Total
+
+	auto pointPhysical = Player::kv()->get("physical-damage-point-system").value().getNumber();
+	auto addPhysicalPoints = pointPhysical / 3000;
+	attackFactor += addPhysicalPoints;
 
 	const auto &weapon = player->getWeapon();
 	if (weapon) {
