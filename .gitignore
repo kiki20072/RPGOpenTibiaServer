@@ -7,7 +7,6 @@
 *.rsuser
 *.suo
 *.user
-*.dll
 *.userosscache
 *.sln.docstates
 
@@ -376,7 +375,6 @@ data-global/world/world.otbm
 # Extensions
 *.ini
 *.otb
-*.exe
 *.manifest
 *.rar
 monster_count.txt
